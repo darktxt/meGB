@@ -1,4 +1,4 @@
-file(GLOB_RECURSE GB_LIB "*.cpp")
+file(GLOB_RECURSE GB_LIB "*.cpp" "*.h")
 
 find_path(SDL2_INCLUDE_DIR SDL2/SDL.h)
 find_library(SDL2_LIBRARY SDL2)

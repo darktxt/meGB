@@ -4,6 +4,9 @@
 
 typedef unsigned char byte;
 
+const double TimePerFrame = 1.0 / 60.0;
+const unsigned int CyclesPerFrame = 70224;
+
 struct SDLWindowDeleter
 {
     void operator()(SDL_Window* window)
@@ -98,7 +101,7 @@ int main(int argc, char** argv){
     std::unique_ptr<SDL_Texture, SDLTextureDeleter> spTexture(
         SDL_CreateTexture(spRenderer.get(), SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 160, 144));
     
-    std::unique_ptr <Emulator> emulator;
+    std::unique_ptr <Emulator> emulator = std::make_unique<Emulator>();
     while (true) {
         Render(spRenderer.get(), spTexture.get(), emulator.get());
     }
