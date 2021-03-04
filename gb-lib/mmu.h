@@ -6,7 +6,12 @@
 class MMU: public MUnit {
 public:
 	bool LoadROM();
-	byte readByte(ushort address) const;
+	byte ReadByte(const ushort address) const;
+	bool WriteByte(const ushort address, const byte val);
+	byte Read(const ushort address) const;
+	bool Write(const ushort address, const byte val);
+	ushort ReadUShort(const ushort address) const;
+
 private:
 	byte memory[0xffff + 1];
 };

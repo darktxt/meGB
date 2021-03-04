@@ -8,6 +8,6 @@ public:
 	bool Initialize();
 	bool LoadRom();
 private:
-	std::unique_ptr<MMU> m_MMU;
+	std::shared_ptr<MMU> m_MMU;
 	std::unique_ptr<GPU> m_GPU;
 };

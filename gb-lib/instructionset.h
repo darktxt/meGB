@@ -1,11 +1,39 @@
 #pragma once
 #include"common.h"
+#include"mmu.h"
+constexpr auto ZeroFlag = 7;
+constexpr auto SubtractFlag = 6;
+constexpr auto HalfCarryFlag = 5;
+constexpr auto CarryFlag = 4;
+constexpr auto INT40 = 0x40;  // VBlank
+constexpr auto INT48 = 0x48; // STAT
+constexpr auto INT50 = 0x50; // Timer
+constexpr auto INT58 = 0x58; // Serial
+constexpr auto INT60 = 0x60; // Joypad
 class InstructionSet {
+    friend class CPU;
 public:
+    InstructionSet();
 	ulong operator ()(const byte opcode) {
 
 	}
 private:
+    std::shared_ptr<MMU> m_MMU;
+    ushort m_AF; // Accumulator & flags
+    ushort m_BC; // General purpose
+    ushort m_DE; // General purpose
+    ushort m_HL; // General purpose
+    ushort m_SP; // Stack pointer
+    ushort m_PC; // Program counter
+    byte* m_ByteRegisterMap[0x07 + 1];
+    ushort* m_UShortRegisterMap[0x03 + 1];
+
+    // Interrupts
+    byte m_IME; // Interrupt master enable
+
+    unsigned long m_cycles; // The current number of cycles
+    bool m_isHalted;
+
     OPF m_operationMap[0xFF + 1];
     OPF m_operationMapCB[0xFF + 1];
     byte GetHighByte(ushort dest);
