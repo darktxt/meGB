@@ -10,6 +10,7 @@ MKDIR build
 PUSHD build
 
 %VCPKG_DIR%\vcpkg.exe install sdl2:%VSCMD_ARG_TGT_ARCH%-windows
+%VCPKG_DIR%\vcpkg.exe install gtest:%VSCMD_ARG_TGT_ARCH%-windows
 
 %CMAKE_EXE% .. "-DCMAKE_TOOLCHAIN_FILE=%VCPKG_DIR%\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=%VSCMD_ARG_TGT_ARCH%-windows -G %VISUAL_STUDIO_VERSION%
 
