@@ -3,10 +3,14 @@
 #include "mmu.h"
 #include "gpu.h";
 
+#ifdef _DEBUG
 #include<gtest/gtest_prod.h>
+#endif
 
 class CPU {
+#ifdef _DEBUG
 	FRIEND_TEST(MMUTest, AccessGPU);
+#endif
 public:
 	bool Initialize();
 	bool LoadRom();
