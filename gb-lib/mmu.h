@@ -12,6 +12,6 @@ public:
 	void RegisterMUnit(std::string name, RF readFunc, WF writeFunc, std::pair<ushort, ushort> legalAddress);
 
 private:
-	byte memory[0xffff + 1];
+	byte memory[0xffff + 1] = {};
 	std::vector<MUnit> munit_list;
 };
