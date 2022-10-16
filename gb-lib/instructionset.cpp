@@ -72,7 +72,7 @@ bool InstructionSet::IsFlagSet(byte flag)
 void InstructionSet::PushByteToSP(byte val)
 {
     m_SP--;
-    m_MMU->Write(m_SP, val);
+    m_MMU->WriteByte(m_SP, val);
 }
 
 void InstructionSet::PushUShortToSP(ushort val)
@@ -83,28 +83,28 @@ void InstructionSet::PushUShortToSP(ushort val)
 
 ushort InstructionSet::PopUShort()
 {
-    ushort val = m_MMU->ReadUShort(m_SP);
+    ushort val = m_MMU->ReadShort(m_SP);
     m_SP += 2;
     return val;
 }
 
 byte InstructionSet::PopByte()
 {
-    byte val = m_MMU->Read(m_SP);
+    byte val = m_MMU->ReadByte(m_SP);
     m_SP++;
     return val;
 }
 
 byte InstructionSet::ReadBytePC()
 {
-    byte val = m_MMU->Read(m_PC);
+    byte val = m_MMU->ReadByte(m_PC);
     m_PC++;
     return val;
 }
 
 ushort InstructionSet::ReadUShortPC()
 {
-    ushort val = m_MMU->ReadUShort(m_PC);
+    ushort val = m_MMU->ReadShort(m_PC);
     m_PC += 2;
     return val;
 }
@@ -201,8 +201,8 @@ void InstructionSet::HandleInterrupts()
     // an interrupt flag is set, handle the interrupt.
     if (m_IME == 0x01)
     {
-        byte IE = m_MMU->Read(0xFFFF);
-        byte IF = m_MMU->Read(0xFF0F);
+        byte IE = m_MMU->ReadByte(0xFFFF);
+        byte IF = m_MMU->ReadByte(0xFF0F);
 
         // This will only match valid interrupts
         byte activeInterrupts = ((IE & IF) & 0x0F);
@@ -244,7 +244,7 @@ void InstructionSet::HandleInterrupts()
                 IF = CLEARBIT(IF, 4);
             }
 
-            m_MMU->Write(0xFF0F, IF);
+            m_MMU->WriteByte(0xFF0F, IF);
         }
     }
 }
@@ -273,7 +273,7 @@ ulong InstructionSet::NOP(const byte& opCode)
 */
 ulong InstructionSet::LD_BC_A(const byte& opCode)
 {
-    m_MMU->Write(m_BC, GetHighByte(m_AF));
+    m_MMU->WriteByte(m_BC, GetHighByte(m_AF));
     return 8;
 }
 
@@ -366,7 +366,7 @@ ulong InstructionSet::LDr_HL_(const byte& opCode)
 {
     byte* r = GetByteRegister(opCode >> 3);
 
-    (*r) = m_MMU->Read(m_HL);
+    (*r) = m_MMU->ReadByte(m_HL);
 
     return 8;
 }
@@ -386,7 +386,7 @@ ulong InstructionSet::LDr_HL_(const byte& opCode)
 ulong InstructionSet::LD_HL_r(const byte& opCode)
 {
     byte* r = GetByteRegister(opCode);
-    m_MMU->Write(m_HL, (*r)); // Load r into the address pointed at by HL.
+    m_MMU->WriteByte(m_HL, (*r)); // Load r into the address pointed at by HL.
 
     return 8;
 }
@@ -558,8 +558,8 @@ ulong InstructionSet::LD_nn_SP(const byte& opCode)
     ushort nn = ReadUShortPC();
 
     // Load A into (nn)
-    m_MMU->Write(nn + 1, GetHighByte(m_SP));
-    m_MMU->Write(nn, GetLowByte(m_SP));
+    m_MMU->WriteByte(nn + 1, GetHighByte(m_SP));
+    m_MMU->WriteByte(nn, GetLowByte(m_SP));
 
     return 20;
 }
@@ -908,7 +908,7 @@ ulong InstructionSet::XORr(const byte& opCode)
 */
 ulong InstructionSet::XOR_HL_(const byte& opCode)
 {
-    byte r = m_MMU->Read(m_HL);
+    byte r = m_MMU->ReadByte(m_HL);
     SetHighByte(&m_AF, r ^ GetHighByte(m_AF));
 
     // Affects Z and clears NHC
@@ -974,7 +974,7 @@ ulong InstructionSet::ORr(const byte& opCode)
 */
 ulong InstructionSet::OR_HL_(const byte& opCode)
 {
-    byte r = m_MMU->Read(m_HL);
+    byte r = m_MMU->ReadByte(m_HL);
     SetHighByte(&m_AF, r | GetHighByte(m_AF));
 
     // Affects Z and clears NHC
@@ -1129,12 +1129,12 @@ ulong InstructionSet::DECr(const byte& opCode)
 */
 ulong InstructionSet::INC_HL_(const byte& opCode)
 {
-    byte HL = m_MMU->Read(m_HL);
+    byte HL = m_MMU->ReadByte(m_HL);
     bool isBit3Before = ISBITSET(HL, 3);
     HL += 1;
     bool isBit3After = ISBITSET(HL, 3);
 
-    m_MMU->Write(m_HL, HL);
+    m_MMU->WriteByte(m_HL, HL);
 
     if (HL == 0x00)
     {
@@ -1170,7 +1170,7 @@ ulong InstructionSet::INC_HL_(const byte& opCode)
 */
 ulong InstructionSet::DEC_HL_(const byte& opCode)
 {
-    byte val = m_MMU->Read(m_HL);
+    byte val = m_MMU->ReadByte(m_HL);
     byte calc = (val - 1);
 
     SetFlag(SubtractFlag);
@@ -1185,7 +1185,7 @@ ulong InstructionSet::DEC_HL_(const byte& opCode)
         ClearFlag(HalfCarryFlag);
     }
 
-    m_MMU->Write(m_HL, calc);
+    m_MMU->WriteByte(m_HL, calc);
 
     return 12;
 }
@@ -1203,7 +1203,7 @@ ulong InstructionSet::DEC_HL_(const byte& opCode)
 ulong InstructionSet::LD_HL_n(const byte& opCode)
 {
     byte n = ReadBytePC();
-    m_MMU->Write(m_HL, n); // Load n into the address pointed at by HL.
+    m_MMU->WriteByte(m_HL, n); // Load n into the address pointed at by HL.
 
     return 12;
 }
@@ -1315,7 +1315,7 @@ ulong InstructionSet::STOP(const byte& opCode)
 */
 ulong InstructionSet::LD_DE_A(const byte& opCode)
 {
-    m_MMU->Write(m_DE, GetHighByte(m_AF));
+    m_MMU->WriteByte(m_DE, GetHighByte(m_AF));
     return 8;
 }
 
@@ -1372,7 +1372,7 @@ ulong InstructionSet::JRe(const byte& opCode)
 */
 ulong InstructionSet::LDA_DE_(const byte& opCode)
 {
-    byte val = m_MMU->Read(m_DE);
+    byte val = m_MMU->ReadByte(m_DE);
     SetHighByte(&m_AF, val);
     return 8;
 }
@@ -1388,7 +1388,7 @@ ulong InstructionSet::LDA_DE_(const byte& opCode)
 */
 ulong InstructionSet::LDA_BC_(const byte& opCode)
 {
-    byte val = m_MMU->Read(m_BC);
+    byte val = m_MMU->ReadByte(m_BC);
     SetHighByte(&m_AF, val);
 
     return 8;
@@ -1471,7 +1471,7 @@ ulong InstructionSet::RRA(const byte& opCode)
 */
 ulong InstructionSet::LDI_HL_A(const byte& opCode)
 {
-    m_MMU->Write(m_HL, GetHighByte(m_AF)); // Load A into the address pointed at by HL.
+    m_MMU->WriteByte(m_HL, GetHighByte(m_AF)); // Load A into the address pointed at by HL.
 
     m_HL++;
 
@@ -1560,7 +1560,7 @@ ulong InstructionSet::DAA(const byte& opCode)
 */
 ulong InstructionSet::LDIA_HL_(const byte& opCode)
 {
-    SetHighByte(&m_AF, m_MMU->Read(m_HL));
+    SetHighByte(&m_AF, m_MMU->ReadByte(m_HL));
     m_HL++;
 
     return 8;
@@ -1598,7 +1598,7 @@ ulong InstructionSet::CPL(const byte& opCode)
 */
 ulong InstructionSet::LDD_HL_A(const byte& opCode)
 {
-    m_MMU->Write(m_HL, GetHighByte(m_AF));
+    m_MMU->WriteByte(m_HL, GetHighByte(m_AF));
 
     m_HL--;
     return 8;
@@ -1615,7 +1615,7 @@ ulong InstructionSet::LDD_HL_A(const byte& opCode)
 */
 ulong InstructionSet::LDDA_HL_(const byte& opCode)
 {
-    byte HL = m_MMU->Read(m_HL);
+    byte HL = m_MMU->ReadByte(m_HL);
     SetHighByte(&m_AF, HL);
 
     m_HL--;
@@ -1632,7 +1632,7 @@ ulong InstructionSet::LDDA_HL_(const byte& opCode)
 ulong InstructionSet::HALT(const byte& opCode)
 {
     m_isHalted = true;
-    //m_IFWhenHalted = m_MMU->Read(0xFF0F);
+    //m_IFWhenHalted = m_MMU->ReadByte(0xFF0F);
     return 0;
 }
 
@@ -1650,7 +1650,7 @@ ulong InstructionSet::HALT(const byte& opCode)
 ulong InstructionSet::ADDA_HL_(const byte& opCode)
 {
     byte A = GetHighByte(m_AF);
-    byte HL = m_MMU->Read(m_HL);
+    byte HL = m_MMU->ReadByte(m_HL);
     SetHighByte(&m_AF, AddByte(A, HL));
 
     return 8;
@@ -1669,7 +1669,7 @@ ulong InstructionSet::ADDA_HL_(const byte& opCode)
 */
 ulong InstructionSet::ADCA_HL_(const byte& opCode)
 {
-    byte HL = m_MMU->Read(m_HL);
+    byte HL = m_MMU->ReadByte(m_HL);
     ADC(HL);
     return 8;
 }
@@ -1688,7 +1688,7 @@ ulong InstructionSet::ADCA_HL_(const byte& opCode)
 ulong InstructionSet::SUB_HL_(const byte& opCode)
 {
     byte A = GetHighByte(m_AF);
-    byte HL = m_MMU->Read(m_HL);
+    byte HL = m_MMU->ReadByte(m_HL);
     byte result = A - HL;
     SetHighByte(&m_AF, result);
 
@@ -1713,7 +1713,7 @@ ulong InstructionSet::SUB_HL_(const byte& opCode)
 */
 ulong InstructionSet::SBCA_HL_(const byte& opCode)
 {
-    byte HL = m_MMU->Read(m_HL);
+    byte HL = m_MMU->ReadByte(m_HL);
     SBC(HL);
     return 8;
 }
@@ -1731,7 +1731,7 @@ ulong InstructionSet::SBCA_HL_(const byte& opCode)
 */
 ulong InstructionSet::AND_HL_(const byte& opCode)
 {
-    byte HL = m_MMU->Read(m_HL);
+    byte HL = m_MMU->ReadByte(m_HL);
     byte result = HL & GetHighByte(m_AF);
     SetHighByte(&m_AF, result);
 
@@ -1764,7 +1764,7 @@ ulong InstructionSet::AND_HL_(const byte& opCode)
 */
 ulong InstructionSet::CP_HL_(const byte& opCode)
 {
-    byte HL = m_MMU->Read(m_HL);
+    byte HL = m_MMU->ReadByte(m_HL);
     byte A = GetHighByte(m_AF);
     byte result = A - HL;
 
@@ -1936,7 +1936,7 @@ ulong InstructionSet::LD_0xFF00n_A(const byte& opCode)
 {
     byte n = ReadBytePC(); // Read n
 
-    m_MMU->Write(0xFF00 + n, GetHighByte(m_AF)); // Load A into 0xFF00 + n
+    m_MMU->WriteByte(0xFF00 + n, GetHighByte(m_AF)); // Load A into 0xFF00 + n
 
     return 12;
 }
@@ -1952,7 +1952,7 @@ ulong InstructionSet::LD_0xFF00n_A(const byte& opCode)
 */
 ulong InstructionSet::LD_0xFF00C_A(const byte& opCode)
 {
-    m_MMU->Write(0xFF00 + GetLowByte(m_BC), GetHighByte(m_AF)); // Load A into 0xFF00 + C
+    m_MMU->WriteByte(0xFF00 + GetLowByte(m_BC), GetHighByte(m_AF)); // Load A into 0xFF00 + C
 
     return 8;
 }
@@ -1971,7 +1971,7 @@ ulong InstructionSet::LD_nn_A(const byte& opCode)
 {
     ushort nn = ReadUShortPC();
 
-    m_MMU->Write(nn, GetHighByte(m_AF)); // Load A into (nn)
+    m_MMU->WriteByte(nn, GetHighByte(m_AF)); // Load A into (nn)
 
     return 16;
 }
@@ -2020,7 +2020,7 @@ ulong InstructionSet::XORn(const byte& opCode)
 ulong InstructionSet::LDA_0xFF00n_(const byte& opCode)
 {
     byte n = ReadBytePC(); // Read n
-    SetHighByte(&m_AF, m_MMU->Read(0xFF00 + n));
+    SetHighByte(&m_AF, m_MMU->ReadByte(0xFF00 + n));
 
     return 12;
 }
@@ -2036,7 +2036,7 @@ ulong InstructionSet::LDA_0xFF00n_(const byte& opCode)
 */
 ulong InstructionSet::LDA_0xFF00C_(const byte& opCode)
 {
-    SetHighByte(&m_AF, m_MMU->Read(0xFF00 + GetLowByte(m_BC)));
+    SetHighByte(&m_AF, m_MMU->ReadByte(0xFF00 + GetLowByte(m_BC)));
 
     return 8;
 }
@@ -2145,7 +2145,7 @@ ulong InstructionSet::LDHLSPe(const byte& opCode)
 ulong InstructionSet::LDA_nn_(const byte& opCode)
 {
     ushort nn = ReadUShortPC();
-    SetHighByte(&m_AF, m_MMU->Read(nn));
+    SetHighByte(&m_AF, m_MMU->ReadByte(nn));
 
     return 16;
 }
@@ -2237,7 +2237,7 @@ ulong InstructionSet::RLCr(const byte& opCode)
 */
 ulong InstructionSet::RLC_HL_(const byte& opCode)
 {
-    byte r = m_MMU->Read(m_HL);
+    byte r = m_MMU->ReadByte(m_HL);
 
     // Grab bit 7 and store it in the carryflag
     ISBITSET(r, 7) ? SetFlag(CarryFlag) : ClearFlag(CarryFlag);
@@ -2248,7 +2248,7 @@ ulong InstructionSet::RLC_HL_(const byte& opCode)
     // Set bit 0 of r to the old CarryFlag
     r = IsFlagSet(CarryFlag) ? SETBIT((r), 0) : CLEARBIT((r), 0);
 
-    m_MMU->Write(m_HL, r);
+    m_MMU->WriteByte(m_HL, r);
 
     // Affects Z, clears N, clears H, affects C
     (r == 0x00) ? SetFlag(ZeroFlag) : ClearFlag(ZeroFlag);
@@ -2300,7 +2300,7 @@ ulong InstructionSet::RRCr(const byte& opCode)
 */
 ulong InstructionSet::RRC_HL_(const byte& opCode)
 {
-    byte r = m_MMU->Read(m_HL);
+    byte r = m_MMU->ReadByte(m_HL);
 
     // Grab bit 0 and store it in the carryflag
     ISBITSET(r, 0) ? SetFlag(CarryFlag) : ClearFlag(CarryFlag);
@@ -2311,7 +2311,7 @@ ulong InstructionSet::RRC_HL_(const byte& opCode)
     // Set bit 0 of r to the old CarryFlag
     r = IsFlagSet(CarryFlag) ? SETBIT((r), 7) : CLEARBIT((r), 7);
 
-    m_MMU->Write(m_HL, r);
+    m_MMU->WriteByte(m_HL, r);
 
     // Affects Z, clears N, clears H, affects C
     (r == 0x00) ? SetFlag(ZeroFlag) : ClearFlag(ZeroFlag);
@@ -2366,7 +2366,7 @@ ulong InstructionSet::RLr(const byte& opCode)
 */
 ulong InstructionSet::RL_HL_(const byte& opCode)
 {
-    byte r = m_MMU->Read(m_HL);
+    byte r = m_MMU->ReadByte(m_HL);
 
     // Grab the current CarryFlag val
     bool carry = IsFlagSet(CarryFlag);
@@ -2380,7 +2380,7 @@ ulong InstructionSet::RL_HL_(const byte& opCode)
     // Set bit 0 of r to the old CarryFlag
     r = carry ? SETBIT((r), 0) : CLEARBIT((r), 0);
 
-    m_MMU->Write(m_HL, r);
+    m_MMU->WriteByte(m_HL, r);
 
     // Affects Z, clears N, clears H, affects C
     (r == 0x00) ? SetFlag(ZeroFlag) : ClearFlag(ZeroFlag);
@@ -2435,7 +2435,7 @@ ulong InstructionSet::RRr(const byte& opCode)
 */
 ulong InstructionSet::RR_HL_(const byte& opCode)
 {
-    byte r = m_MMU->Read(m_HL);
+    byte r = m_MMU->ReadByte(m_HL);
 
     // Grab the current CarryFlag val
     bool carry = IsFlagSet(CarryFlag);
@@ -2449,7 +2449,7 @@ ulong InstructionSet::RR_HL_(const byte& opCode)
     // Set bit 7 of r to the old CarryFlag
     r = carry ? SETBIT((r), 7) : CLEARBIT((r), 7);
 
-    m_MMU->Write(m_HL, r);
+    m_MMU->WriteByte(m_HL, r);
 
     // Affects Z, clears N, clears H, affects C
     (r == 0x00) ? SetFlag(ZeroFlag) : ClearFlag(ZeroFlag);
@@ -2497,14 +2497,14 @@ ulong InstructionSet::SLAr(const byte& opCode)
 */
 ulong InstructionSet::SLA_HL_(const byte& opCode)
 {
-    byte r = m_MMU->Read(m_HL);
+    byte r = m_MMU->ReadByte(m_HL);
 
     // Grab bit 7 and store it in the carryflag
     ISBITSET(r, 7) ? SetFlag(CarryFlag) : ClearFlag(CarryFlag);
 
     // Shift r left
     r = r << 1;
-    m_MMU->Write(m_HL, r);
+    m_MMU->WriteByte(m_HL, r);
 
     // Affects Z, clears N, clears H, affects C
     (r == 0x00) ? SetFlag(ZeroFlag) : ClearFlag(ZeroFlag);
@@ -2552,14 +2552,14 @@ ulong InstructionSet::SRAr(const byte& opCode)
 */
 ulong InstructionSet::SRA_HL_(const byte& opCode)
 {
-    byte r = m_MMU->Read(m_HL);
+    byte r = m_MMU->ReadByte(m_HL);
 
     // Grab bit 0 and store it in the carryflag
     ISBITSET(r, 0) ? SetFlag(CarryFlag) : ClearFlag(CarryFlag);
 
     // Shift r right
     r = (r >> 1) | (r & 0x80);
-    m_MMU->Write(m_HL, r);
+    m_MMU->WriteByte(m_HL, r);
 
     // Affects Z, clears N, clears H, affects C
     (r == 0x00) ? SetFlag(ZeroFlag) : ClearFlag(ZeroFlag);
@@ -2608,7 +2608,7 @@ ulong InstructionSet::SRLr(const byte& opCode)
 */
 ulong InstructionSet::SRL_HL_(const byte& opCode)
 {
-    byte r = m_MMU->Read(m_HL);
+    byte r = m_MMU->ReadByte(m_HL);
 
     // Grab bit 0 and store it in the carryflag
     ISBITSET(r, 0) ? SetFlag(CarryFlag) : ClearFlag(CarryFlag);
@@ -2616,7 +2616,7 @@ ulong InstructionSet::SRL_HL_(const byte& opCode)
     // Shift r right
     r = r >> 1;
     r = CLEARBIT(r, 7);
-    m_MMU->Write(m_HL, r);
+    m_MMU->WriteByte(m_HL, r);
 
     // Affects Z, clears N, clears H, affects C
     (r == 0x00) ? SetFlag(ZeroFlag) : ClearFlag(ZeroFlag);
@@ -2660,7 +2660,7 @@ ulong InstructionSet::BITbr(const byte& opCode)
 ulong InstructionSet::BITb_HL_(const byte& opCode)
 {
     byte bit = (opCode >> 3) & 0x07;
-    byte r = m_MMU->Read(m_HL);
+    byte r = m_MMU->ReadByte(m_HL);
 
     // Test bit b in r
     (!ISBITSET(r, bit)) ? SetFlag(ZeroFlag) : ClearFlag(ZeroFlag);
@@ -2700,8 +2700,8 @@ ulong InstructionSet::RESbr(const byte& opCode)
 ulong InstructionSet::RESb_HL_(const byte& opCode)
 {
     byte bit = (opCode >> 3) & 0x07;
-    byte r = m_MMU->Read(m_HL);
-    m_MMU->Write(m_HL, CLEARBIT(r, bit));
+    byte r = m_MMU->ReadByte(m_HL);
+    m_MMU->WriteByte(m_HL, CLEARBIT(r, bit));
 
     return 16;
 }
@@ -2735,8 +2735,8 @@ ulong InstructionSet::SETbr(const byte& opCode)
 ulong InstructionSet::SETb_HL_(const byte& opCode)
 {
     byte bit = (opCode >> 3) & 0x07;
-    byte r = m_MMU->Read(m_HL);
-    m_MMU->Write(m_HL, SETBIT(r, bit));
+    byte r = m_MMU->ReadByte(m_HL);
+    m_MMU->WriteByte(m_HL, SETBIT(r, bit));
 
     return 16;
 }
@@ -2778,11 +2778,11 @@ ulong InstructionSet::SWAPr(const byte& opCode)
 */
 ulong InstructionSet::SWAP_HL_(const byte& opCode)
 {
-    byte r = m_MMU->Read(m_HL);
+    byte r = m_MMU->ReadByte(m_HL);
     byte lowNibble = (r & 0x0F);
     byte highNibble = (r & 0xF0);
 
-    m_MMU->Write(m_HL, (lowNibble << 4) | (highNibble >> 4));
+    m_MMU->WriteByte(m_HL, (lowNibble << 4) | (highNibble >> 4));
 
     (r == 0x00) ? SetFlag(ZeroFlag) : ClearFlag(ZeroFlag);
     ClearFlag(SubtractFlag);

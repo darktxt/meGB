@@ -3,15 +3,15 @@
 #include"common.h"
 #include"logger.h"
 
-class MMU: public MUnit {
+class MMU {
 public:
 	bool LoadROM();
 	byte ReadByte(const ushort address) const;
 	bool WriteByte(const ushort address, const byte val);
-	byte Read(const ushort address) const;
-	bool Write(const ushort address, const byte val);
-	ushort ReadUShort(const ushort address) const;
+	ushort ReadShort(const ushort address) const;
+	void RegisterMUnit(std::string& name, RF readFunc, WF writeFunc, std::pair<ushort, ushort> legalAddress);
 
 private:
 	byte memory[0xffff + 1];
+	std::vector<MUnit> munit_list;
 };

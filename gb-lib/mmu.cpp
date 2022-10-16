@@ -7,31 +7,50 @@ bool MMU::LoadROM()
 
 bool MMU::WriteByte(const ushort address, const byte val)
 {
-	return byte();
+	if (address < 0 || address>0xffff) {
+		// never happen
+		Logger::LogError("Write illegally! %x", address);
+		return false;
+	}
+	for (auto& munit : munit_list) {
+		short start = munit.legalAddress.first;
+		short end = munit.legalAddress.second;
+		if (address >= start && address <= end) {
+			return munit.writeFunc(address,val);
+		}
+	}
+	memory[address] = val;
+	return true;
 }
 
-byte MMU::Read(const ushort address) const
-{
-	return ReadByte(address);
-}
 
-bool MMU::Write(const ushort address, const byte val)
+ushort MMU::ReadShort(const ushort address) const
 {
-	return byte();
-}
-
-ushort MMU::ReadUShort(const ushort address) const
-{
-	ushort val = Read(address + 1);
+	ushort val = ReadByte(address + 1);
 	val = val << 8;
-	val |= Read(address);
+	val |= ReadByte(address);
 	return val;
+}
+
+void MMU::RegisterMUnit(std::string& name, RF readFunc, WF writeFunc, std::pair<ushort, ushort> legalAddress)
+{
+	munit_list.push_back({ name,readFunc,writeFunc,legalAddress });
 }
 
 byte MMU::ReadByte(ushort address) const
 {
-	if(0<=address&&address<=0xffff)
-		return memory[address];
-	Logger::LogError("Read illegally! %x", address);
-	return 0x00;
+	if (address < 0 || address>0xffff) {
+		// never happen
+		Logger::LogError("Read illegally! %x", address);
+		return 0x00;
+	}
+	for (auto& munit : munit_list) {
+		short start = munit.legalAddress.first;
+		short end = munit.legalAddress.second;
+		if (address >= start && address <= end) {
+			return munit.readFunc(address);
+		}
+	}
+
+	return memory[address];
 }
