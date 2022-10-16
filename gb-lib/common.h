@@ -5,14 +5,15 @@
 #include <cstdarg>
 #include <iostream>
 #include <memory>
+#include <functional>
 typedef unsigned char byte;
 typedef unsigned short ushort;
 typedef unsigned long ulong;
 typedef signed char sbyte;
 
-typedef bool (*WF)(const ushort address, const byte byte);
-typedef byte (*RF)(const ushort address);
-typedef ulong (*OPF)(const byte& opCode);
+typedef std::function<bool(const ushort address, const byte byte)> WF;
+typedef std::function<byte(const ushort address)> RF;
+typedef std::function<ulong(const byte& opCode)> OPF;
 
 #define ARRAYSIZE(a) (sizeof a / sizeof a[0])
 #define ISBITSET(val, bit) (((val >> bit) & 0x01) == 0x01)

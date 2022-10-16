@@ -9,7 +9,7 @@ public:
 	byte ReadByte(const ushort address) const;
 	bool WriteByte(const ushort address, const byte val);
 	ushort ReadShort(const ushort address) const;
-	void RegisterMUnit(std::string& name, RF readFunc, WF writeFunc, std::pair<ushort, ushort> legalAddress);
+	void RegisterMUnit(std::string name, RF readFunc, WF writeFunc, std::pair<ushort, ushort> legalAddress);
 
 private:
 	byte memory[0xffff + 1];

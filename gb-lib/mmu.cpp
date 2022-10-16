@@ -32,7 +32,7 @@ ushort MMU::ReadShort(const ushort address) const
 	return val;
 }
 
-void MMU::RegisterMUnit(std::string& name, RF readFunc, WF writeFunc, std::pair<ushort, ushort> legalAddress)
+void MMU::RegisterMUnit(std::string name, RF readFunc, WF writeFunc, std::pair<ushort, ushort> legalAddress)
 {
 	munit_list.push_back({ name,readFunc,writeFunc,legalAddress });
 }
