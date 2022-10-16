@@ -1,5 +1,6 @@
 #include "logger.h"
 bool Logger::isEnabled = true;
+char Logger::buffer[BUFFERSIZE] = {};
 void Logger::Disable()
 {
     isEnabled = false;

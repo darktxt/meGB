@@ -1,6 +1,6 @@
 #pragma once
 #include"common.h"
-constexpr auto BUFFERSIZE = 1024;
+constexpr int BUFFERSIZE = 1024;
 class Logger {
 private:
 	Logger(){}
