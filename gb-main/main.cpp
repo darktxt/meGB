@@ -1,6 +1,6 @@
 #include"SDL2/SDL.h"
 #include<memory>
-#include<Emulator.h>
+#include<emulator.h>
 
 typedef unsigned char byte;
 

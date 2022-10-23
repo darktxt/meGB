@@ -1,9 +1,5 @@
 #include"instructionset.h"
 
-InstructionSet::InstructionSet()
-{
-}
-
 byte InstructionSet::GetHighByte(ushort dest)
 {
     return ((dest >> 8) & 0xFF);

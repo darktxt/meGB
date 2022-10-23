@@ -1,20 +1,14 @@
 #pragma once
 #include"common.h"
-#include "mmu.h"
-#include "gpu.h";
-
-#ifdef _DEBUG
-#include<gtest/gtest_prod.h>
-#endif
-
+#include"instructionset.h"
 class CPU {
-#ifdef _DEBUG
-	FRIEND_TEST(MMUTest, AccessGPU);
-#endif
 public:
+	CPU(std::shared_ptr<MMU> m_MMU):m_MMU(m_MMU), m_instructionset(m_MMU){}
 	bool Initialize();
 	bool LoadRom();
+	int step();
 private:
-	std::unique_ptr<MMU> m_MMU;
-	std::unique_ptr<GPU> m_GPU;
+	std::shared_ptr<MMU> m_MMU;
+	InstructionSet m_instructionset;
+	ushort m_PC;
 };

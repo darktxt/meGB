@@ -5,24 +5,14 @@ bool MMU::LoadROM()
 	return false;
 }
 
-bool MMU::WriteByte(const ushort address, const byte val)
-{
-	if (address < 0 || address>0xffff) {
-		// never happen
-		Logger::GetInstance().LogError("Write illegally! %x", address);
-		return false;
-	}
-	for (auto& munit : munit_list) {
-		short start = munit.legalAddress.first;
-		short end = munit.legalAddress.second;
-		if (address >= start && address <= end) {
-			return munit.writeFunc(address,val);
-		}
-	}
-	memory[address] = val;
-	return true;
+
+bool MMU::WriteByte(const ushort address, const byte val) {
+	return false;
 }
 
+byte MMU::ReadByte(const ushort address) const {
+	return 0x00;
+}
 
 ushort MMU::ReadShort(const ushort address) const
 {
@@ -32,25 +22,30 @@ ushort MMU::ReadShort(const ushort address) const
 	return val;
 }
 
-void MMU::RegisterMUnit(std::string name, RF readFunc, WF writeFunc, std::pair<ushort, ushort> legalAddress)
+void MMU::RegisterMUnits(RF readFunc, WF writeFunc, std::pair<ushort, ushort> legalAddress)
 {
-	munit_list.push_back({ name,readFunc,writeFunc,legalAddress });
+	for (int i = legalAddress.first; i <= legalAddress.second; i++)
+		memory[i] = { readFunc,writeFunc };
 }
 
-byte MMU::ReadByte(ushort address) const
+
+bool MMU::Write(const ushort address, const byte val)
 {
 	if (address < 0 || address>0xffff) {
 		// never happen
-		Logger::GetInstance().LogError("Read illegally! %x", address);
-		return 0x00;
-	}
-	for (auto& munit : munit_list) {
-		short start = munit.legalAddress.first;
-		short end = munit.legalAddress.second;
-		if (address >= start && address <= end) {
-			return munit.readFunc(address);
-		}
+		Logger::GetInstance().LogError("MMU: Write illegally! %x", address);
+		return false;
 	}
 
-	return memory[address];
+	return memory[address].writeFunc(address, val);
+}
+
+byte MMU::Read(ushort address) const
+{
+	if (address < 0 || address>0xffff) {
+		// never happen
+		Logger::GetInstance().LogError("MMU: Read illegally! %x", address);
+		return 0x00;
+	}
+	return memory[address].readFunc(address);
 }

@@ -13,7 +13,7 @@ constexpr auto INT60 = 0x60; // Joypad
 class InstructionSet {
     friend class CPU;
 public:
-    InstructionSet();
+    InstructionSet(std::shared_ptr<MMU> m_MMU) : m_MMU(m_MMU) {}
 	ulong operator ()(const byte opcode) {
 
 	}

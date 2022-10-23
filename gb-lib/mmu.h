@@ -6,12 +6,15 @@
 class MMU {
 public:
 	bool LoadROM();
+	bool Write(const ushort address, const byte val);
+	byte Read(const ushort address) const;
+	void RegisterMUnits(RF readFunc, WF writeFunc, std::pair<ushort, ushort> legalAddress);
 	byte ReadByte(const ushort address) const;
 	bool WriteByte(const ushort address, const byte val);
 	ushort ReadShort(const ushort address) const;
-	void RegisterMUnit(std::string name, RF readFunc, WF writeFunc, std::pair<ushort, ushort> legalAddress);
 
 private:
-	byte memory[0xffff + 1] = {};
-	std::vector<MUnit> munit_list;
+	byte mmu_memory[0xffff + 1] = {};// memory except gpu
+	MUnit memory[0xffff + 1];
+
 };
